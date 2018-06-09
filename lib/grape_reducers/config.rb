@@ -30,7 +30,7 @@ module GrapeReducers
       'eq' => '= ?',
       'gt' => '> ?',
       'gte' => '>= ?',
-      'in' => 'IN ?',
+      'in' => 'IN (?)',
       'btw' => 'BETWEEN ? AND ?'
     }
 
@@ -44,7 +44,11 @@ module GrapeReducers
 
     define_reducer :filter do |reducer|
       reducer.default_lambda = ->(reducible, attr_name, value, operator) do
-        reducible.where("#{attr_name} #{operator}", value)
+        if operator.count('?') > 1
+          reducible.where("#{attr_name} #{operator}", *value)
+        else
+          reducible.where("#{attr_name} #{operator}", value)
+        end
       end
       reducer.operator_mapping = OPERATOR_MAPPING_COMP_PGSQL
       reducer.functor_group = 'filters'

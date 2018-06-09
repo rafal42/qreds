@@ -1,9 +1,7 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-gem 'grape'
-gem 'activesupport'
+gemspec
 
 group :test do
   gem 'rspec'
-  gem 'pry'
 end

@@ -46,6 +46,13 @@ RSpec.describe GrapeReducers::Config do
       it 'calls where with attr name, value and operator' do
         is_expected.to eq([3])
       end
+
+      context 'when translated operator has more than one "?"' do
+        let(:operator) { 'BETWEEN ? AND ?' }
+        let(:value) { [2, 3] }
+
+        it { is_expected.to eq([2, 3]) }
+      end
     end
 
     describe 'operator mapping' do
@@ -58,7 +65,7 @@ RSpec.describe GrapeReducers::Config do
           'eq' => '= ?',
           'gt' => '> ?',
           'gte' => '>= ?',
-          'in' => 'IN ?',
+          'in' => 'IN (?)',
           'btw' => 'BETWEEN ? AND ?'
         )
       end
