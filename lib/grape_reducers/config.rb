@@ -5,11 +5,11 @@ module GrapeReducers
     class << self
       delegate :[], to: :@reducers
 
-      def define_reducer(helper_name:, default_lambda:, operator_mapping: nil, params_group_name: helper_name)
+      def define_reducer(helper_name:, default_lambda:, operator_mapping: nil, functor_group: helper_name)
         @reducers[helper_name] = {
           default_lambda: default_lambda,
           operator_mapping: operator_mapping,
-          params_group_name: params_group_name
+          functor_group: functor_group
         }
       end
     end
@@ -39,7 +39,7 @@ module GrapeReducers
         reducible.where("#{attr_name} #{operator}", value)
       end,
       operator_mapping: OPERATOR_MAPPING_COMP_PGSQL,
-      params_group_name: 'filters'
+      functor_group: 'filters'
     )
   end
 end

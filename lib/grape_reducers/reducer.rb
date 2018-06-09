@@ -5,9 +5,7 @@ module GrapeReducers
     # @param params [Hash] with keys being functor names and values the functor arguments.
     # @param fallback_method [Symbol|String] used on collection when functor cannot be found
     # @param resource_name [String] the name of the resource that collection contains
-    def initialize(functor_group:, collection:, params:, config:,
-      resource_name: collection.model.to_s)
-      @functor_group = functor_group
+    def initialize(collection:, params:, config:, resource_name: collection.model.to_s)
       @collection = collection
       @params = params
       @config = config
@@ -24,10 +22,10 @@ module GrapeReducers
 
     private
 
-    attr_reader :functor_group, :collection, :params, :config, :resource_name
+    attr_reader :collection, :params, :config, :resource_name
 
     def functor_instance(functor_key, reduced_collection, functor_value)
-      functor_group_name = functor_group.to_s.capitalize
+      functor_group_name = config[:functor_group].to_s.capitalize
       functor_name = functor_key.classify
 
       klass = "::#{functor_group_name}::#{resource_name}::#{functor_name}".constantize

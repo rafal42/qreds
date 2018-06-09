@@ -3,7 +3,6 @@ require 'spec_helper'
 RSpec.describe GrapeReducers::Reducer do
   let(:base_args) do
     {
-      functor_group: functor_group,
       collection: collection,
       params: params,
       config: config
@@ -14,7 +13,8 @@ RSpec.describe GrapeReducers::Reducer do
 
   let(:config) do
     {
-      default_lambda: ->(*_) { ['transformed'] }
+      default_lambda: ->(*_) { ['transformed'] },
+      functor_group: functor_group
     }
   end
 

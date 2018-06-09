@@ -46,8 +46,8 @@ RSpec.describe GrapeReducers::Config do
       end
     end
 
-    describe 'params_group_name' do
-      subject { reducer[:params_group_name] }
+    describe 'functor_group' do
+      subject { reducer[:functor_group] }
 
       it { is_expected.to eq('filters') }
     end
