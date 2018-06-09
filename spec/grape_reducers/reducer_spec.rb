@@ -12,10 +12,10 @@ RSpec.describe GrapeReducers::Reducer do
   let(:fallback_method) { nil }
 
   let(:config) do
-    {
+    GrapeReducers::Config.new(
       default_lambda: ->(*_) { ['transformed'] },
       functor_group: functor_group
-    }
+    )
   end
 
   subject { described_class.new(args).call }

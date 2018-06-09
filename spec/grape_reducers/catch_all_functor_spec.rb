@@ -14,7 +14,7 @@ RSpec.describe GrapeReducers::CatchAllFunctor do
       end
     }
   end
-  let(:config) { base_config }
+  let(:config) { GrapeReducers::Config.new(base_config) }
 
   it "calls given lambda and returns it's value" do
     is_expected.to eq([2])
@@ -22,12 +22,12 @@ RSpec.describe GrapeReducers::CatchAllFunctor do
 
   context 'when config has operator mapping' do
     let(:config) do
-      {
+      GrapeReducers::Config.new(
         **base_config,
         operator_mapping: {
           'gte' => '>='
         }
-      }
+      )
     end
 
     it 'raises a RuntimeError' do

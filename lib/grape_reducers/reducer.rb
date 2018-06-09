@@ -25,7 +25,7 @@ module GrapeReducers
     attr_reader :collection, :params, :config, :resource_name
 
     def functor_instance(functor_key, reduced_collection, functor_value)
-      functor_group_name = config[:functor_group].to_s.capitalize
+      functor_group_name = config.functor_group.to_s.capitalize
       functor_name = functor_key.classify
 
       klass = "::#{functor_group_name}::#{resource_name}::#{functor_name}".constantize
