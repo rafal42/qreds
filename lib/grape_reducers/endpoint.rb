@@ -1,23 +1,15 @@
 module GrapeReducers
   module Endpoint
-    def sort(collection, **args)
-      apply(:sort, collection, :order, args)
-    end
-
-    def filter(collection, **args)
-      apply(:filters, collection, :where, args)
-    end
-
-    private
-
-    def apply(key, collection, fallback_method, **args)
-      declared_params = declared(params, include_missing: false)[key]
+    def method_missing(name, collection, **args, &_)
+      config = ::GrapeReducers::Config[name]
+      params_group_name = config[:params_group_name]
+      declared_params = declared(params, include_missing: false)[params_group_name]
 
       ::GrapeReducers::Reducer.new(
-        functor_group: key,
+        functor_group: params_group_name,
         collection: collection,
-        reducible: declared_params,
-        fallback_method: fallback_method,
+        params: declared_params,
+        config: config,
         **args
       ).call
     end

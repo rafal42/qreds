@@ -3,10 +3,17 @@ class MockCollection < Array
     MockModel
   end
 
-  def where(hash)
-    k, v = key_val(hash)
+  def where(*args)
+    if args.size == 1
+      k, v = key_val(*args)
 
-    select { |el| el.public_send(k) == v }
+      select { |el| el.public_send(k) == v }
+    else
+      attr_name_with_operator, value = *args
+      attr_name, operator = attr_name_with_operator.split(' ')[0..1]
+
+      select { |el| el.public_send(attr_name).public_send(sanitize_operator(operator), value) }
+    end
   end
 
   def order(hash)
@@ -19,6 +26,11 @@ class MockCollection < Array
   end
 
   private
+
+  def sanitize_operator(operator)
+    return '==' if operator == '='
+    operator
+  end
 
   def key_val(hash)
     k = hash.keys.first

@@ -1,6 +1,8 @@
 require 'bundler/setup'
 require 'grape_reducers'
 
+Bundler.require(:default, :test)
+
 require_relative 'support/mock_collection'
 require_relative 'support/mock_endpoint'
 require_relative 'support/mock_model'

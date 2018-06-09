@@ -5,25 +5,31 @@ RSpec.describe GrapeReducers::Reducer do
     {
       functor_group: functor_group,
       collection: collection,
-      reducible: reducible,
-      fallback_method: fallback_method
+      params: params,
+      config: config
     }
   end
   let(:args) { base_args }
   let(:fallback_method) { nil }
 
+  let(:config) do
+    {
+      default_lambda: ->(*_) { ['transformed'] }
+    }
+  end
+
   subject { described_class.new(args).call }
 
   let(:functor_group) { 'Filters' }
   let(:collection) { MockCollection.new([1, 2, 3]) }
-  let(:reducible) { { 'equality' => 1 } }
+  let(:params) { { 'equality' => 1 } }
 
   it 'calls specified functor' do
     is_expected.to eq([1])
   end
 
-  context 'when reducible is empty' do
-    let(:reducible) { {} }
+  context 'when params is empty' do
+    let(:params) { {} }
 
     it 'returns the collection unchanged' do
       is_expected.to eq(collection)
@@ -39,27 +45,14 @@ RSpec.describe GrapeReducers::Reducer do
     end
   end
 
-  context 'when cannot find a class and fallback_method is eq to where' do
+  context 'when cannot find a class' do
     let(:collection) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
-    let(:reducible) { { 'some_field' => 2 } }
-    let(:fallback_method) { 'where' }
+    let(:params) { { 'some_field' => 2 } }
 
-    subject { described_class.new(args).call.map(&:value) }
+    subject { described_class.new(args).call }
 
-    it 'uses the fallback filter' do
-      is_expected.to eq([2])
-    end
-  end
-
-  context 'when cannot find a class and fallback_method is eq to order' do
-    let(:collection) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
-    let(:reducible) { { 'some_field' => 'desc' } }
-    let(:fallback_method) { 'order' }
-
-    subject { described_class.new(args).call.map(&:value) }
-
-    it 'uses the fallback sort' do
-      is_expected.to eq([3, 2, 1])
+    it 'uses the config default lambda' do
+      is_expected.to eq(['transformed'])
     end
   end
 end
