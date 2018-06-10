@@ -1,5 +1,5 @@
 require 'bundler/setup'
-require 'grape_reducers'
+require 'qreds'
 
 Bundler.require(:default, :test)
 

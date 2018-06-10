@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-RSpec.describe GrapeReducers::Config do
-  let(:reducible) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
+RSpec.describe Qreds::Config do
+  let(:query) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
   let(:attr_name) { 'some_field' }
 
   describe '.define_reducer' do
@@ -26,7 +26,7 @@ RSpec.describe GrapeReducers::Config do
     let(:reducer) { described_class[:sort] }
 
     describe 'default lambda' do
-      subject { reducer.default_lambda.call(reducible, attr_name, value, nil).map(&:value) }
+      subject { reducer.default_lambda.call(query, attr_name, value, nil).map(&:value) }
       let(:value) { 'desc' }
 
       it 'calls order with attr name and value' do
@@ -39,7 +39,7 @@ RSpec.describe GrapeReducers::Config do
     let(:reducer) { described_class[:filter] }
 
     describe 'default lambda' do
-      subject { reducer.default_lambda.call(reducible, attr_name, value, operator).map(&:value) }
+      subject { reducer.default_lambda.call(query, attr_name, value, operator).map(&:value) }
       let(:value) { 2 }
       let(:operator) { '>' }
 

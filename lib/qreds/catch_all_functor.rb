@@ -1,7 +1,7 @@
-module GrapeReducers
+module Qreds
   class CatchAllFunctor < Functor
-    def initialize(collection, key, value, config)
-      super(collection, value)
+    def initialize(query, key, value, config)
+      super(query, value)
 
       @key = key
       @config = config
@@ -12,7 +12,7 @@ module GrapeReducers
       operator = map_operator(tail)
       attr_name = operator.nil? ? key : head
 
-      config.default_lambda.call(collection, attr_name, value, operator)
+      config.default_lambda.call(query, attr_name, value, operator)
     end
 
     private

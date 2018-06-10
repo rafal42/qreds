@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-RSpec.describe GrapeReducers::Reducer do
+RSpec.describe Qreds::Reducer do
   let(:base_args) do
     {
-      collection: collection,
+      query: query,
       params: params,
       config: config
     }
@@ -12,7 +12,7 @@ RSpec.describe GrapeReducers::Reducer do
   let(:fallback_method) { nil }
 
   let(:config) do
-    GrapeReducers::Config.new(
+    Qreds::Config.new(
       default_lambda: ->(*_) { ['transformed'] },
       functor_group: functor_group
     )
@@ -21,7 +21,7 @@ RSpec.describe GrapeReducers::Reducer do
   subject { described_class.new(args).call }
 
   let(:functor_group) { 'Filters' }
-  let(:collection) { MockCollection.new([1, 2, 3]) }
+  let(:query) { MockCollection.new([1, 2, 3]) }
   let(:params) { { 'equality' => 1 } }
 
   it 'calls specified functor' do
@@ -32,7 +32,7 @@ RSpec.describe GrapeReducers::Reducer do
     let(:params) { {} }
 
     it 'returns the collection unchanged' do
-      is_expected.to eq(collection)
+      is_expected.to eq(query)
     end
   end
 
@@ -46,7 +46,7 @@ RSpec.describe GrapeReducers::Reducer do
   end
 
   context 'when cannot find a class' do
-    let(:collection) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
+    let(:query) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
     let(:params) { { 'some_field' => 2 } }
 
     subject { described_class.new(args).call }

@@ -1,13 +1,13 @@
-module GrapeReducers
+module Qreds
   module Endpoint
-    def method_missing(name, collection, **args, &_)
-      config = ::GrapeReducers::Config[name]
+    def method_missing(name, query, **args, &_)
+      config = ::Qreds::Config[name]
       functor_group = config.functor_group
 
       declared_params = declared(params, include_missing: false)[functor_group]
 
-      ::GrapeReducers::Reducer.new(
-        collection: collection,
+      ::Qreds::Reducer.new(
+        query: query,
         params: declared_params,
         config: config,
         **args

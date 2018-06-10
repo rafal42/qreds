@@ -1,4 +1,4 @@
-module GrapeReducers
+module Qreds
   class Config
     attr_accessor :functor_group, :default_lambda, :operator_mapping
 
@@ -37,17 +37,17 @@ module GrapeReducers
     private_constant :OPERATOR_MAPPING_COMP_PGSQL
 
     define_reducer :sort do |reducer|
-      reducer.default_lambda = ->(reducible, attr_name, value, _) do
-        reducible.order(attr_name => value)
+      reducer.default_lambda = ->(query, attr_name, value, _) do
+        query.order(attr_name => value)
       end
     end
 
     define_reducer :filter do |reducer|
-      reducer.default_lambda = ->(reducible, attr_name, value, operator) do
+      reducer.default_lambda = ->(query, attr_name, value, operator) do
         if operator.count('?') > 1
-          reducible.where("#{attr_name} #{operator}", *value)
+          query.where("#{attr_name} #{operator}", *value)
         else
-          reducible.where("#{attr_name} #{operator}", value)
+          query.where("#{attr_name} #{operator}", value)
         end
       end
       reducer.operator_mapping = OPERATOR_MAPPING_COMP_PGSQL

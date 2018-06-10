@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-RSpec.describe GrapeReducers::CatchAllFunctor do
-  subject { described_class.new(collection, key, value, config).call.map(&:value) }
+RSpec.describe Qreds::CatchAllFunctor do
+  subject { described_class.new(query, key, value, config).call.map(&:value) }
 
-  let(:collection) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
+  let(:query) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
   let(:key) { 'some_field' }
   let(:value) { 2 }
   let(:base_config) do
@@ -14,7 +14,7 @@ RSpec.describe GrapeReducers::CatchAllFunctor do
       end
     }
   end
-  let(:config) { GrapeReducers::Config.new(base_config) }
+  let(:config) { Qreds::Config.new(base_config) }
 
   it "calls given lambda and returns it's value" do
     is_expected.to eq([2])
@@ -22,7 +22,7 @@ RSpec.describe GrapeReducers::CatchAllFunctor do
 
   context 'when config has operator mapping' do
     let(:config) do
-      GrapeReducers::Config.new(
+      Qreds::Config.new(
         **base_config,
         operator_mapping: {
           'gte' => '>='

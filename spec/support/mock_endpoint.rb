@@ -1,5 +1,5 @@
 class MockEndpoint
-  include GrapeReducers::Endpoint
+  include Qreds::Endpoint
 
   def initialize(params)
     @params = params
