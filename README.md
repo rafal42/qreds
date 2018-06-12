@@ -3,7 +3,7 @@
 Qreds is an architectural boilerplate for implementing query reducers,
 and a set of built-in query reducers for ActiveRecord Relations.
 
-Qreds is suited to work seamlessly with Grape.
+Qreds is a ready-to-go solution for Grape.
 
 ## Quickstart
 
@@ -42,7 +42,8 @@ class TestApi < Grape::API
 end
 ```
 
-This definition would enable you to make requests with the specified params, and they'll work out of the box by applying `.where` or `.order` with the passed params.
+This definition would enable you to make requests with the specified params, and they'll work out of the box by applying `.where` or `.order` with the passed params. So for example, if you pass `{ "filters": { "value_eq": 42 } }`, you'd get only records where the `field` value is equal to 42.
+
 You can of course define custom reducers, like the filters or sort specified above. If that's what you're looking for, keep reading.
 
 ## Advanced
@@ -54,7 +55,7 @@ When you use the `filter` or `sort` helpers, you are in fact using a `filter` or
 Let's consider the `filter` reducer as an example to learn how the abstraction works.
 
 1) `filter` fetches `declared` params under the `filters` key
-2) declared params are then passed on to the generic Reducer along with the query
+2) declared params are then passed on to the generic Reducer along with the query; this Reducer is responsible for applying proper transformations
 3) for each parameter (`key => value` pair) the generic Reducer tries to fetch a matching class
 4) if a matching class (called a Functor) is found, it is passed the `query` and the `value` from the pair
 5) if a Functor is not found, then a default lambda from the specific reducer config is used to transform the query
@@ -67,7 +68,7 @@ The `Functor` has two attributes and private attr_readers: `query` and `value`. 
 ```
 module Filters
   module Product
-    class Value < ::Qreds::Functor
+    class CustomValueFilter < ::Qreds::Functor
       def call
         query.where('value > ?', value - 10)
       end
@@ -76,8 +77,8 @@ module Filters
 end
 ```
 
-Let's now consider another value of params: `{ "filters": { "value_eq": 42} }`.
-If we didn't define the Functor `Filters::Product::ValueEq` it couldn't be found. Instead, the work is directed to a catch-all Functor. Now, depending on the reducer's config (in this case - the `filter` reducer's config), the following come into play:
+Let's now consider another set of params: `{ "filters": { "value_eq": 42} }`.
+If we didn't define the Functor `Filters::Product::ValueEq`, a matching class couldn't be found. Instead, the work is directed to a catch-all Functor. Now, depending on the specific reducer's config (in this case - the `filter` reducer's config), the following come into play:
 - `config.operator_mapping` - defines how suffixes should be translated; the `filter` reducer defines, for example, it maps the `eq` suffix to `=` for use in AR queries; so when the `value_eq` is passed, the final result of the functor is roughly: `query.where('value = ?', value)`.
 - `config.default_lambda(query, attr_name, value, operator)` - defines the lambda which is used every time when a Functor cannot be found; so when the catch-all functor executes, it delegates the logic to the lambda. Receives the query, name of the attribute (params `key`), the value of the attribute (`value`), the `operator` transformed with `operator_mapping` (if the mapping is present).
 
