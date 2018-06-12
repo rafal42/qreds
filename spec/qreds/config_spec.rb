@@ -5,18 +5,15 @@ RSpec.describe Qreds::Config do
   let(:attr_name) { 'some_field' }
 
   describe '.define_reducer' do
-    before(:all) do
-      described_class.define_reducer(:test_reducer) do |reducer|
-        reducer.operator_mapping = {}
+    let(:reducer) do
+      test_strategy = -> (_helper_name, config) { config }
+
+      described_class.define_reducer(:test_reducer, strategy: test_strategy) do |config|
+        config.operator_mapping = {}
       end
     end
 
-    after(:all) do
-      described_class.instance_variable_get(:@reducers).delete(:test_reducer)
-    end
-
     it 'creates a reducer with defaults and allows changing any other keys' do
-      reducer = described_class[:test_reducer]
       expect(reducer.functor_group).to eq(:test_reducer)
       expect(reducer.operator_mapping).to eq({})
     end

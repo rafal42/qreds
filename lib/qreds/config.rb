@@ -1,3 +1,5 @@
+require 'qreds/endpoint'
+
 module Qreds
   class Config
     attr_accessor :functor_group, :default_lambda, :operator_mapping
@@ -15,12 +17,29 @@ module Qreds
 
       # @param helper_name [Symbol|String]
       # @yield reducer [Hash]
-      def define_reducer(helper_name)
-        reducer = new(functor_group: helper_name)
+      def define_reducer(helper_name, strategy: method(:define_endpoint_method))
+        config = new(functor_group: helper_name)
 
-        yield reducer
+        yield config
 
-        @reducers[helper_name] = reducer
+        strategy.call(helper_name, config)
+      end
+
+      def define_endpoint_method(helper_name, config)
+        ::Qreds::Endpoint.send(:define_method, helper_name) do |query, **args|
+          functor_group = config.functor_group
+
+          declared_params = declared(params, include_missing: false)[functor_group]
+
+          ::Qreds::Reducer.new(
+            query: query,
+            params: declared_params,
+            config: config,
+            **args
+          ).call
+        end
+
+        @reducers[helper_name] = config
       end
     end
 

@@ -1,17 +1,6 @@
 module Qreds
   module Endpoint
-    def method_missing(name, query, **args, &_)
-      config = ::Qreds::Config[name]
-      functor_group = config.functor_group
-
-      declared_params = declared(params, include_missing: false)[functor_group]
-
-      ::Qreds::Reducer.new(
-        query: query,
-        params: declared_params,
-        config: config,
-        **args
-      ).call
-    end
+    # A container for helper methods to invoke reducers.
+    # The methods are defined via configuration (Config.define_reducer)
   end
 end
