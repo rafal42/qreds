@@ -42,90 +42,8 @@ class TestApi < Grape::API
 end
 ```
 
-This definition would make the following specs pass:
-
-```
-require 'rails_helper'
-
-RSpec.describe 'TestApi' do
-  describe 'GET /api/products' do
-    let!(:product_1) { Product.create!(name: 'Apple', value: 10) }
-    let!(:product_2) { Product.create!(name: 'Banana', value: 20) }
-    let!(:product_3) { Product.create!(name: 'Strawberry', value: 30) }
-
-    before { get '/api/products', params: params }
-
-    let(:params) {}
-
-    def expect_response(*args)
-      parsed_body = JSON.parse response.body
-      expect(parsed_body).to eq(args.map { |p| [p.name, p.value] })
-    end
-
-    it 'returns all products' do
-      expect_response(product_1, product_2, product_3)
-    end
-
-    describe 'sort' do
-      let(:params) do
-        {
-          'sort' => sort
-        }
-      end
-
-      context 'by name asc' do
-        let(:sort) { { 'name' => 'asc' } }
-
-        it { expect_response(product_1, product_2, product_3) }
-      end
-
-      context 'by name desc' do
-        let(:sort) { { 'name' => 'desc' } }
-
-        it { expect_response(product_3, product_2, product_1) }
-      end
-
-      context 'by value asc' do
-        let(:sort) { { 'value' => 'asc' } }
-
-        it { expect_response(product_1, product_2, product_3) }
-      end
-
-      context 'by value desc' do
-        let(:sort) { { 'value' => 'desc' } }
-
-        it { expect_response(product_3, product_2, product_1) }
-      end
-    end
-
-    describe 'filters' do
-      let(:params) do
-        {
-          'filters' => filters
-        }
-      end
-
-      context 'name_in' do
-        let(:filters) { { 'name_in' => ['Apple', 'Banana'] } }
-
-        it { expect_response(product_1, product_2) }
-      end
-
-      context 'value_eq' do
-        let(:filters) { { 'value_eq' => 10 } }
-
-        it { expect_response(product_1) }
-      end
-
-      context 'value_gte' do
-        let(:filters) { { 'value_gte' => 20 } }
-
-        it { expect_response(product_2, product_3) }
-      end
-    end
-  end
-end
-```
+This definition would enable you to make requests with the specified params, and they'll work out of the box by applying `.where` or `.order` with the passed params.
+You can of course define custom reducers, like the filters or sort specified above. If that's what you're looking for, keep reading.
 
 ## Advanced
 
@@ -215,7 +133,7 @@ It is a reducer with a default lambda suited to work with ActiveRecord, with no 
   'value' => 'asc', # sorts by value ascending
   'value' => 'desc', # sorts by value descending
 }
-
+```
 
 ### Defining a reducer
 
