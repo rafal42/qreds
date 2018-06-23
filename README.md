@@ -42,67 +42,11 @@ class TestApi < Grape::API
 end
 ```
 
-This definition would enable you to make requests with the specified params, and they'll work out of the box by applying `.where` or `.order` with the passed params. So for example, if you pass `{ "filters": { "value_eq": 42 } }`, you'd get only records where the `field` value is equal to 42.
+This definition would enable you to make requests with the specified params, and they'll work out of the box by applying `.where` or `.order` with the given values. So for example, if you pass `{ "filters": { "value_eq": 42 } }`, you'd get only records where the `field` value is equal to 42.
 
 You can of course define custom reducers, like the filters or sort specified above. If that's what you're looking for, keep reading.
 
-## Advanced
-
-To get the full advantage of Qreds, you need to accustom yourself with the basic concepts.
-
-When you use the `filter` or `sort` helpers, you are in fact using a `filter` or `sort` reducer. These two are defined by default and are suited to work with ActiveRecord.
-
-Let's consider the `filter` reducer as an example to learn how the abstraction works.
-
-1) `filter` fetches `declared` params under the `filters` key
-2) declared params are then passed on to the generic Reducer along with the query; this Reducer is responsible for applying proper transformations
-3) for each parameter (`key => value` pair) the generic Reducer tries to fetch a matching class
-4) if a matching class (called a Functor) is found, it is passed the `query` and the `value` from the pair
-5) if a Functor is not found, then a default lambda from the specific reducer config is used to transform the query
-
-So, with the following declared params: `{ "filters": { "value": 42 } }`, and the query passed to the `filter` helper being `Product::ActiveRecord_Relation`, the generic Reducer would try to fetch a functor named `Filters::Product::Value`.
-
-The functor is a plain old Ruby object. You can subclass `Qreds::Functor` to get access to the Functor interface.
-The `Functor` has two attributes and private attr_readers: `query` and `value`. In our example, `query` is a `Product::ActiveRecord_Relation`, and `value` is 42.
-
-```
-module Filters
-  module Product
-    class CustomValueFilter < ::Qreds::Functor
-      def call
-        query.where('value > ?', value - 10)
-      end
-    end
-  end
-end
-```
-
-Let's now consider another set of params: `{ "filters": { "value_eq": 42} }`.
-If we didn't define the Functor `Filters::Product::ValueEq`, a matching class couldn't be found. Instead, the work is directed to a catch-all Functor. Now, depending on the specific reducer's config (in this case - the `filter` reducer's config), the following come into play:
-- `config.operator_mapping` - defines how suffixes should be translated; the `filter` reducer defines, for example, it maps the `eq` suffix to `=` for use in AR queries; so when the `value_eq` is passed, the final result of the functor is roughly: `query.where('value = ?', value)`.
-- `config.default_lambda(query, attr_name, value, operator)` - defines the lambda which is used every time when a Functor cannot be found; so when the catch-all functor executes, it delegates the logic to the lambda. Receives the query, name of the attribute (params `key`), the value of the attribute (`value`), the `operator` transformed with `operator_mapping` (if the mapping is present).
-
-
-### Namespace lookup
-
-The reducers use the following schema for looking up Functors:
-
-`{functor_group}::{resource_name}::{functor_name}`, where:
-- `functor_group` is passed when defining the reducer
-- `resource_name` defaults to `query.model.to_s`, but can be overridden (eg. when invoking `filter(query, resource_name: 'ResourceName'))`
-- `functor_name` is the key in params; eg, for `{ "filters": { "something": 42 } }`, the `functor_name` is `'something'`
-
-### Order of application
-
-Functors transform the query in the order that respective params have been passed. For example:
-```
-'sort' => {
-  'value' => 'asc',
-  'name' => 'desc'
-}
-```
-
-Will at first apply `order('value asc')`, then `order('name desc')`
+## Built-in reducers
 
 ### `filter` reducer
 
@@ -135,6 +79,78 @@ It is a reducer with a default lambda suited to work with ActiveRecord, with no 
   'value' => 'desc', # sorts by value descending
 }
 ```
+
+## Custom filtering/sorting
+
+You might need to write some more complex logic to reduce your query. To do that, you can subclass the `Qreds::Functor` class:
+
+```
+module Filters
+  module Product
+    class CustomValueFilter < ::Qreds::Functor
+      def call
+        query.where('value > ?', value - 10)
+      end
+    end
+  end
+end
+```
+
+So, if you had the params:
+```
+{
+  "filters": {
+    "custom_value_filter": 42
+  }
+}
+```
+
+And you called: `filter(Product.all)`, then an instance custom filter above would be created, and would have access to:
+`query` - `Product::ActiveRecord_Relation` (result of `Product.all`)
+`value` - `42`
+
+## Advanced
+
+To leverage the full advantage of Qreds, you need to accustom yourself with the concepts.
+
+When you use the `filter` or `sort` helpers, you are in fact using a `filter` or `sort` reducer. These two are defined by default and are suited to work with ActiveRecord.
+
+Let's consider the `filter` reducer as an example to learn how the abstraction works.
+
+1) `filter` fetches `declared` params under the `filters` key
+2) declared params are then processed along the query you passed (`filter(Product.all)`)
+3) for each parameter (`key => value` pair) we try to find a class, matching the `key` (eg. when the key is `value`, we look for `Filters::Product::Value`)
+4) if a matching class is found, it transforms the `query` according to the `value`
+5) if a matching class is not found, then a default lambda from the specific reducer config is used to transform the query.
+
+So, with the following declared params: `{ "filters": { "value": 42 } }`, and the query passed to the `filter` helper being `Product::ActiveRecord_Relation`, we would try to find a class named `Filters::Product::Value`.
+
+Now, depending on the specific reducer's config (in this case - the `filter` reducer's config), the following come into play:
+
+- `config.operator_mapping` - defines how parameter name suffixes should be translated; the `filter` reducer defines, for example, that the `_eq` suffix to should mean `=` for usage in ActiveRecord queries; so when the `value_eq` is passed, the final result of applying the transformation is roughly: `query.where('value = ?', value)`.
+- `config.default_lambda(query, attr_name, value, operator)` - defines the lambda which is used every time when a matchinc class cannot be found; Receives the query, name of the attribute (`key`), the value of the attribute (`value`), the `operator` transformed with `operator_mapping` (if the mapping is present).
+
+
+### Namespace lookup
+
+The reducers use the following schema for looking up Functors:
+
+`{functor_group}::{resource_name}::{functor_name}`, where:
+- `functor_group` can be passed when defining a reducer
+- `resource_name` defaults to `query.model.to_s`, but can be overridden (eg. when invoking `filter(query, resource_name: 'ResourceName'))`
+- `functor_name` is the key in params; eg, for `{ "filters": { "something": 42 } }`, the `functor_name` is `'something'`
+
+### Order of application
+
+Functors transform the query in the order that respective params have been passed. For example:
+```
+'sort' => {
+  'value' => 'asc',
+  'name' => 'desc'
+}
+```
+
+Will at first apply `order('value asc')`, then `order('name desc')`
 
 ### Defining a reducer
 
