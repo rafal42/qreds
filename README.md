@@ -89,7 +89,7 @@ module Filters
   module Product
     class CustomValueFilter < ::Qreds::Functor
       def call
-        query.where('value > ?', value - 10)
+        query.where('value > ?', context[:user].admin? ? value - 10 : value - 5)
       end
     end
   end
@@ -105,9 +105,10 @@ So, if you had the params:
 }
 ```
 
-And you called: `filter(Product.all)`, then an instance custom filter above would be created, and would have access to:
+And you called: `filter(Product.all, context: { user: current_user })`, then an instance of the custom filter above would be created, and would have access to:
 `query` - `Product::ActiveRecord_Relation` (result of `Product.all`)
 `value` - `42`
+`context` -  `{ user: current_user }` context hash
 
 ## Advanced
 

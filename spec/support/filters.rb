@@ -1,26 +1,16 @@
 module Filters
   module MockModel
-    class Equality
-      def initialize(collection, value)
-        @collection = collection
-        @value = value
-      end
-
+    class Equality < ::Qreds::Functor
       def call
-        @collection.select { |el| el == @value }
+        query.select { |el| el == value }
       end
     end
   end
 
   module DifferentMockModel
-    class Equality
-      def initialize(collection, value)
-        @collection = collection
-        @value = value
-      end
-
+    class Equality < ::Qreds::Functor
       def call
-        @collection.select { |el| el != @value }
+        query.select { |el| el != value }
       end
     end
   end

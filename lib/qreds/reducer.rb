@@ -4,11 +4,13 @@ module Qreds
     # @param params [Hash] with keys being functor names and values the functor arguments.
     # @param config [Config] to determine functor group and to pass on to the CatchAllFunctor
     # @param resource_name [String] the name of the resource that query operates on
-    def initialize(query:, params:, config:, resource_name: query.model.to_s)
+    # @param context [any]
+    def initialize(query:, params:, config:, resource_name: query.model.to_s, context: {})
       @query = query
       @params = params
       @config = config
       @resource_name = resource_name
+      @context = context
     end
 
     def call
@@ -21,14 +23,14 @@ module Qreds
 
     private
 
-    attr_reader :query, :params, :config, :resource_name
+    attr_reader :query, :params, :config, :resource_name, :context
 
     def functor_instance(functor_key, reduced_query, functor_value)
       functor_group_name = config.functor_group.to_s.capitalize
       functor_name = functor_key.classify
 
       klass = "::#{functor_group_name}::#{resource_name}::#{functor_name}".constantize
-      klass.new(reduced_query, functor_value)
+      klass.new(reduced_query, functor_value, context)
     rescue NameError
       ::Qreds::CatchAllFunctor.new(
         reduced_query,

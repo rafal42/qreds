@@ -16,7 +16,7 @@ module Qreds
       delegate :[], to: :@reducers
 
       # @param helper_name [Symbol|String]
-      # @yield reducer [Hash]
+      # @yield config [Hash]
       def define_reducer(helper_name, strategy: method(:define_endpoint_method))
         config = new(functor_group: helper_name)
 
@@ -25,8 +25,10 @@ module Qreds
         strategy.call(helper_name, config)
       end
 
+      private
+
       def define_endpoint_method(helper_name, config)
-        ::Qreds::Endpoint.send(:define_method, helper_name) do |query, **args|
+        ::Qreds::Endpoint.send(:define_method, helper_name) do |query, context={}, **args|
           functor_group = config.functor_group
 
           declared_params = declared(params, include_missing: false)[functor_group]
@@ -35,6 +37,7 @@ module Qreds
             query: query,
             params: declared_params,
             config: config,
+            context: context,
             **args
           ).call
         end
