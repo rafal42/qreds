@@ -29,15 +29,25 @@ module Qreds
       functor_group_name = config.functor_group.to_s.capitalize
       functor_name = functor_key.classify
 
-      klass = "::#{functor_group_name}::#{resource_name}::#{functor_name}".constantize
-      klass.new(reduced_query, functor_value, context)
-    rescue NameError
+      klass = functor_class(functor_key, reduced_query, functor_value)
+
+      return klass.new(reduced_query, functor_value, context) if klass
+
       ::Qreds::CatchAllFunctor.new(
         reduced_query,
-        functor_key,
         functor_value,
+        context,
+        functor_key,
         config
       )
+    end
+
+    def functor_class(functor_key, reduced_query, functor_value)
+      functor_group_name = config.functor_group.to_s.capitalize
+      functor_name = functor_key.classify
+
+      klass = "::#{functor_group_name}::#{resource_name}::#{functor_name}".constantize
+    rescue NameError
     end
   end
 end

@@ -59,13 +59,13 @@ module Qreds
     private_constant :OPERATOR_MAPPING_COMP_PGSQL
 
     define_reducer :sort do |reducer|
-      reducer.default_lambda = ->(query, attr_name, value, _) do
+      reducer.default_lambda = ->(query, attr_name, value, _, _) do
         query.order(attr_name => value)
       end
     end
 
     define_reducer :filter do |reducer|
-      reducer.default_lambda = ->(query, attr_name, value, operator) do
+      reducer.default_lambda = ->(query, attr_name, value, operator, _) do
         if operator.count('?') > 1
           query.where("#{attr_name} #{operator}", *value)
         else

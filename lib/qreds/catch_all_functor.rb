@@ -1,7 +1,7 @@
 module Qreds
   class CatchAllFunctor < Functor
-    def initialize(query, key, value, config)
-      super(query, value)
+    def initialize(query, value, context, key, config)
+      super(query, value, context)
 
       @key = key
       @config = config
@@ -12,7 +12,7 @@ module Qreds
       operator = map_operator(tail)
       attr_name = operator.nil? ? key : head
 
-      config.default_lambda.call(query, attr_name, value, operator)
+      config.default_lambda.call(query, attr_name, value, operator, context)
     end
 
     private

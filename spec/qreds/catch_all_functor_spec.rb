@@ -1,14 +1,15 @@
 require 'spec_helper'
 
 RSpec.describe Qreds::CatchAllFunctor do
-  subject { described_class.new(query, key, value, config).call.map(&:value) }
+  subject { described_class.new(query, value, context, key, config).call.map(&:value) }
 
   let(:query) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
   let(:key) { 'some_field' }
   let(:value) { 2 }
+  let(:context) { {} }
   let(:base_config) do
     {
-      default_lambda: ->(collection, attr_name, value, operator) do
+      default_lambda: ->(collection, attr_name, value, operator, context) do
         operator = '==' if operator.nil?
         collection.select { |x| x.public_send(attr_name).public_send(operator, value) }
       end
