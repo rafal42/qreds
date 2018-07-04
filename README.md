@@ -36,7 +36,7 @@ class TestApi < Grape::API
       end
     end
     get do
-      (sort filter(Product.all)).pluck(:name, :value)
+      sort filter(Product.all)
     end
   end
 end
@@ -129,7 +129,7 @@ So, with the following declared params: `{ "filters": { "value": 42 } }`, and th
 Now, depending on the specific reducer's config (in this case - the `filter` reducer's config), the following come into play:
 
 - `config.operator_mapping` - defines how parameter name suffixes should be translated; the `filter` reducer defines, for example, that the `_eq` suffix to should mean `=` for usage in ActiveRecord queries; so when the `value_eq` is passed, the final result of applying the transformation is roughly: `query.where('value = ?', value)`.
-- `config.default_lambda(query, attr_name, value, operator)` - defines the lambda which is used every time when a matchinc class cannot be found; Receives the query, name of the attribute (`key`), the value of the attribute (`value`), the `operator` transformed with `operator_mapping` (if the mapping is present).
+- `config.default_lambda(query, attr_name, value, operator, context)` - defines the lambda which is used every time when a matchinc class cannot be found; Receives the query, name of the attribute (`key`), the value of the attribute (`value`), the `operator` transformed with `operator_mapping` (if the mapping is present).
 
 
 ### Namespace lookup
@@ -161,7 +161,7 @@ Qreds exposes an interface to define a new reducer. Take a look at an example:
 Qreds::Config.define_reducer :elasticsearch_filter do |config|
   config.operator_mapping = {} # optional; if defined, will raise an error when an undefined suffix is provided
   config.functor_group = :elasticsearch_filters # optional, defaults to the name passed as `define_reducer` argument
-  config.default_lambda = ->(query, attr_name, value, _operator) do
+  config.default_lambda = ->(query, attr_name, value, _operator, _context) do
     {
       **query,
       attr_name => value
