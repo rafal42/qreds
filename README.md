@@ -16,12 +16,11 @@ and run `bundle install`.
 
 ### Example usage (ActiveRecord)
 
+Assume you have a model named `Product`, with fields `name: String` and `value: Integer`. Now, you'd like to enable filtering and sorting in a Grape endpoint on that particular model. You can do so with the following code:
+
 ```
 class TestApi < Grape::API
   helpers Qreds::Endpoint
-
-  format :json
-  prefix :api
 
   resources :products do
     params do
@@ -44,7 +43,7 @@ end
 
 This definition would enable you to make requests with the specified params, and they'll work out of the box by applying `.where` or `.order` with the given values. So for example, if you pass `{ "filters": { "value_eq": 42 } }`, you'd get only records where the `field` value is equal to 42.
 
-You can of course define custom reducers, like the filters or sort specified above. If that's what you're looking for, keep reading.
+Qreds has built-in support for such filters and sorting for ActiveRecord, but also enables you to write custom AR filters / sorting, and define other reducer types to handle different cases (for example, if you'd want some other behaviour for ElasticSearch based endpoints).
 
 ## Built-in reducers
 
