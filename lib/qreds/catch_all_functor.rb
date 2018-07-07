@@ -1,5 +1,10 @@
 module Qreds
   class CatchAllFunctor < Functor
+    # @param query [any] the query to adjust
+    # @param value [any] the parameter value
+    # @param context [any]
+    # @param key [String] the parameter name
+    # @param config [Qreds::Config] current reducer config
     def initialize(query, value, context, key, config)
       super(query, value, context)
 

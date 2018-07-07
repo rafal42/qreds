@@ -1,8 +1,8 @@
 module Qreds
   class Reducer
-    # @param query [any] the initial value to be provided to reduce()
+    # @param query [any] the query to be reduced
     # @param params [Hash] with keys being functor names and values the functor arguments.
-    # @param config [Config] to determine functor group and to pass on to the CatchAllFunctor
+    # @param config [Qreds::Config] current reducer config
     # @param resource_name [String] the name of the resource that query operates on
     # @param context [any]
     def initialize(query:, params:, config:, resource_name: query.model.to_s, context: {})

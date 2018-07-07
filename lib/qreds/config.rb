@@ -6,6 +6,7 @@ module Qreds
 
     @reducers = {}
 
+    # @param args [Hash<#to_s, any>]
     def initialize(args)
       args.each do |(key, value)|
         send("#{key}=", value)
@@ -15,7 +16,7 @@ module Qreds
     class << self
       delegate :[], to: :@reducers
 
-      # @param helper_name [Symbol|String]
+      # @param helper_name [Symbol|String] the name of the helper method to be defined
       # @yield config [Hash]
       def define_reducer(helper_name, strategy: method(:define_endpoint_method))
         config = new(functor_group: helper_name)
