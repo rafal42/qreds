@@ -18,7 +18,7 @@ and run `bundle install`.
 
 Assume you have a model named `Product`, with fields `name: String` and `value: Integer`. Now, you'd like to enable filtering and sorting in a Grape endpoint on that particular model. You can do so with the following code:
 
-```
+```ruby
 class TestApi < Grape::API
   helpers Qreds::Endpoint
 
@@ -54,7 +54,7 @@ Qreds has built-in support for such filters and sorting for ActiveRecord, but al
 
 It is a reducer with a default lambda suited to work with ActiveRecord, and an operator mapping suited to work with PostgreSQL. For basic operations, you don't need to define a custom functor, but can take advantage of the mapping. Example params with all available suffixes.
 
-```
+```ruby
 'filters' => {
   'value_lt' => 42, # filters all records where value is less than 42
   'value_lte' => 42, # filters all records where value is less than or equal to 42
@@ -72,7 +72,7 @@ It is a reducer with a default lambda suited to work with ActiveRecord, and an o
 `Sort::{resource_name}::{functor_name}`.
 
 It is a reducer with a default lambda suited to work with ActiveRecord, with no operator mapping. It will accept any values that ActiveRecord `order` accepts for values, so `'desc'` or `'asc'` are good to go. Example params:
-```
+```ruby
 'sort' => {
   'value' => 'asc', # sorts by value ascending
   'value' => 'desc', # sorts by value descending
@@ -83,7 +83,7 @@ It is a reducer with a default lambda suited to work with ActiveRecord, with no 
 
 You might need to write some more complex logic to reduce your query. To do that, you can subclass the `Qreds::Functor` class:
 
-```
+```ruby
 module Filters
   module Product
     class CustomValueFilter < ::Qreds::Functor
@@ -96,10 +96,10 @@ end
 ```
 
 So, if you had the params:
-```
+```ruby
 {
-  "filters": {
-    "custom_value_filter": 42
+  'filters' => {
+    'custom_value_filter' => 42
   }
 }
 ```
@@ -142,21 +142,22 @@ The reducers use the following schema for looking up Functors:
 
 ### Order of application
 
-Functors transform the query in the order that respective params have been passed. For example:
-```
-'sort' => {
-  'value' => 'asc',
-  'name' => 'desc'
-}
+Functors transform the query in the order of params declaration. For example, having:
+
+```ruby
+optional :sort, type: Hash do
+  optional :x, type: String
+  optional :y, type: String
+end
 ```
 
-Will at first apply `order('value asc')`, then `order('name desc')`
+Calling `sort` on a collection would first apply `order(x => value)`, then `order(y => value)` (if both are present).
 
 ### Defining a reducer
 
 Qreds exposes an interface to define a new reducer. Take a look at an example:
 
-```
+```ruby
 Qreds::Config.define_reducer :elasticsearch_filter do |config|
   config.operator_mapping = {} # optional; if defined, will raise an error when an undefined suffix is provided
   config.functor_group = :elasticsearch_filters # optional, defaults to the name passed as `define_reducer` argument
