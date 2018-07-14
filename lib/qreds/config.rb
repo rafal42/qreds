@@ -6,6 +6,10 @@ module Qreds
 
     @reducers = {}
 
+    def self.reducers
+      @reducers
+    end
+
     # @param args [Hash<#to_s, any>]
     def initialize(args)
       args.each do |(key, value)|
@@ -67,12 +71,21 @@ module Qreds
 
     define_reducer :filter do |reducer|
       reducer.default_lambda = ->(query, attr_name, value, operator, _) do
-        if operator.count('?') > 1
-          query.where("#{attr_name} #{operator}", *value)
+        terms = attr_name.split('.')
+        sendable_attr_name = terms.last(2).join('.')
+
+        q = if operator.count('?') > 1
+          query.where("#{sendable_attr_name} #{operator}", *value)
         else
-          query.where("#{attr_name} #{operator}", value)
+          query.where("#{sendable_attr_name} #{operator}", value)
         end
+
+        joins_terms = terms[0..-2].reverse.reduce({}) { |hash, term| { term => hash } }
+
+        return q.joins(joins_terms).group(:id) unless terms.size == 1
+        q
       end
+
       reducer.operator_mapping = OPERATOR_MAPPING_COMP_PGSQL
       reducer.functor_group = 'filters'
     end

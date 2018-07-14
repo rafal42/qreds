@@ -2,7 +2,7 @@ module Filters
   module MockModel
     class Equality < ::Qreds::Functor
       def call
-        query.select { |el| el == value }
+        query.where('equality' => value)
       end
     end
   end
@@ -10,7 +10,7 @@ module Filters
   module DifferentMockModel
     class Equality < ::Qreds::Functor
       def call
-        query.select { |el| el != value }
+        query.where('equality != ?', value)
       end
     end
   end

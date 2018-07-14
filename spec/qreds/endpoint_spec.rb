@@ -2,7 +2,9 @@ require 'spec_helper'
 
 RSpec.describe Qreds::Endpoint do
   let(:endpoint) { MockEndpoint.new(params) }
-  let(:query) { MockCollection.new([2, 3, 1]) }
+  let(:query) { MockQuery.new }
+  let(:reducer) { double }
+  let(:reduced_query) { double }
 
   describe '#sort' do
     subject { endpoint.sort(query) }
@@ -14,20 +16,27 @@ RSpec.describe Qreds::Endpoint do
       }
     end
 
-    it { is_expected.to eq([1, 2, 3]) }
+    it 'builds a reducer, calls it and returns the call value' do
+      expect(Qreds::Reducer).to receive(:new).with(
+        query: query,
+        params: {
+          'simple' => 'asc'
+        },
+        config: Qreds::Config.reducers[:sort],
+        context: {}
+      ).and_return(reducer)
+      expect(reducer).to receive(:call).and_return(reduced_query)
 
-    context 'with dynamic sorting - no predefined sort' do
-      subject { endpoint.sort(query).map(&:value) }
-      let(:query) { MockCollection.new([2, 3, 1].map { |i| SimpleObject.new(i) })}
-      let(:params) do
-        {
-          'sort' => {
-            'some_field' => 'desc'
-          }
-        }
-      end
+      is_expected.to be(reduced_query)
+    end
 
-      it { is_expected.to eq([3, 2, 1]) }
+    it 'properly reduces the query' do
+      expect(subject.explain).to eq(
+        where: {},
+        order: { 'simple' => 'asc' },
+        joins: [],
+        group: []
+      )
     end
   end
 
@@ -41,22 +50,28 @@ RSpec.describe Qreds::Endpoint do
       }
     end
 
-    it 'filters the collection' do
-      is_expected.to eq([2])
+    it 'builds a reducer, calls it and returns the call value' do
+      expect(Qreds::Reducer).to receive(:new).with(
+        query: query,
+        params: {
+          'equality' => 2
+        },
+        config: Qreds::Config.reducers[:filter],
+        context: {}
+      ).and_return(reducer)
+
+      expect(reducer).to receive(:call).and_return(reduced_query)
+
+      is_expected.to be(reduced_query)
     end
 
-    context 'with dynamic filtering - no predefined filter' do
-      subject { endpoint.filter(query).map(&:value) }
-      let(:query) { MockCollection.new([1, 2, 3].map { |i| SimpleObject.new(i) })}
-      let(:params) do
-        {
-          'filters' => {
-            'some_field_eq' => 2
-          }
-        }
-      end
-
-      it { is_expected.to eq([2]) }
+    it 'properly reduces the query' do
+      expect(subject.explain).to eq(
+        where: { 'equality' => 2 },
+        order: {},
+        joins: [],
+        group: []
+      )
     end
   end
 end

@@ -18,21 +18,31 @@ RSpec.describe Qreds::Reducer do
     )
   end
 
-  subject { described_class.new(args).call }
+  subject { described_class.new(args).call.explain }
 
   let(:functor_group) { 'Filters' }
-  let(:query) { MockCollection.new([1, 2, 3]) }
+  let(:query) { MockQuery.new }
   let(:params) { { 'equality' => 1 } }
 
   it 'calls specified functor' do
-    is_expected.to eq([1])
+    is_expected.to eq(
+      where: { 'equality' => 1 },
+      order: {},
+      joins: [],
+      group: []
+    )
   end
 
   context 'when params is empty' do
     let(:params) { {} }
 
-    it 'returns the collection unchanged' do
-      is_expected.to eq(query)
+    it 'does not apply any changes' do
+      is_expected.to eq(
+        where: {},
+        order: {},
+        joins: [],
+        group: []
+      )
     end
   end
 
@@ -41,12 +51,24 @@ RSpec.describe Qreds::Reducer do
     let(:args) { base_args.merge(resource_name: resource_name) }
 
     it 'calls the different resource' do
-      is_expected.to eq([2, 3])
+      is_expected.to eq(
+        where: { 'equality != ?' => [1] },
+        order: {},
+        joins: [],
+        group: []
+      )
     end
   end
 
-  context 'when cannot find a class' do
-    let(:query) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
+  context 'when cannot find a functor' do
+    let(:query) do
+      MockQuery.new.tap do |q|
+        def q.model
+          Integer
+        end
+      end
+    end
+
     let(:params) { { 'some_field' => 2 } }
 
     subject { described_class.new(args).call }

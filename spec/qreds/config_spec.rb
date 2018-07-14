@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 RSpec.describe Qreds::Config do
-  let(:query) { MockCollection.new((1..3).map { |i| SimpleObject.new(i) }) }
+  let(:query) { MockQuery.new }
   let(:attr_name) { 'some_field' }
 
   describe '.define_reducer' do
@@ -23,11 +23,18 @@ RSpec.describe Qreds::Config do
     let(:reducer) { described_class[:sort] }
 
     describe 'default lambda' do
-      subject { reducer.default_lambda.call(query, attr_name, value, nil, {}).map(&:value) }
+      subject { reducer.default_lambda.call(query, attr_name, value, nil, {}).explain }
       let(:value) { 'desc' }
 
       it 'calls order with attr name and value' do
-        is_expected.to eq([3, 2, 1])
+        is_expected.to eq(
+          where: {},
+          order: {
+            'some_field' => value
+          },
+          joins: [],
+          group: []
+        )
       end
     end
   end
@@ -36,19 +43,54 @@ RSpec.describe Qreds::Config do
     let(:reducer) { described_class[:filter] }
 
     describe 'default lambda' do
-      subject { reducer.default_lambda.call(query, attr_name, value, operator, {}).map(&:value) }
+      subject { reducer.default_lambda.call(query, attr_name, value, operator, {}).explain }
+
       let(:value) { 2 }
-      let(:operator) { '>' }
+      let(:operator) { '> ?' }
 
       it 'calls where with attr name, value and operator' do
-        is_expected.to eq([3])
+        is_expected.to eq(
+          where: {
+            'some_field > ?' => [value]
+          },
+          order: {},
+          joins: [],
+          group: []
+        )
       end
 
       context 'when translated operator has more than one "?"' do
         let(:operator) { 'BETWEEN ? AND ?' }
         let(:value) { [2, 3] }
 
-        it { is_expected.to eq([2, 3]) }
+        it do
+          is_expected.to eq(
+            where: {
+              'some_field BETWEEN ? AND ?' => value
+            },
+            order: {},
+            joins: [],
+            group: []
+          )
+        end
+      end
+
+      context 'when passing a nested association' do
+        let(:attr_name) { 'an_association.another_association.some_field' }
+        let(:value) { 6 }
+
+        it 'calls where with the nested association and joins with it' do
+          is_expected.to eq(
+            where: {
+              'another_association.some_field > ?' => [value]
+            },
+            order: {},
+            joins: [{
+              'an_association' => { 'another_association' => {} }
+            }],
+            group: %i[id]
+          )
+        end
       end
     end
 
