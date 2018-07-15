@@ -47,26 +47,28 @@ Qreds has built-in support for such filters and sorting for ActiveRecord, but al
 
 #### Association reducers
 
-What if you just added a new association to `Product`:
+What if you just added new associations to `Product`:
 
 ```ruby
 class Product
   has_many :offers
+  belongs_to :retailer
 end
 ```
 
-And wanted to filter all products that have offers with `value` less than some particular value?
+And wanted to filter all products that have offers with `value` less than some particular value, and belong to particular retailers?
 No problem, we've got you covered.
 
 ```ruby
 params do
   optional :filters, type: Hash do
     optional :'offers.value_lt', type: Integer
+    optional :'retailer.id_in', type: Array
   end
 end
-```
 
-Now, when the endpoint receives `{"filters": {"offers.value_lt": 42 } }`, it will return all products that have an offer with value less than 42. Qreds takes care of automatically joining the required tables and applying `group(:id)` to get rid of possible duplicates.
+```
+Now, when the endpoint receives `{"filters": { "offers.value_lt": 42, "retailer.id_in": [21] } }`, it will return all products that have an offer with value less than 42 and belong to retailer with id 21. Qreds takes care of automatically joining the required tables and applying `group(:id)` to get rid of possible duplicates.
 
 *Sorting by association fields is not implemented.*
 
