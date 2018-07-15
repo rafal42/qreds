@@ -22,7 +22,7 @@ RSpec.describe Qreds::Endpoint do
         params: {
           'simple' => 'asc'
         },
-        config: Qreds::Config.reducers[:sort],
+        config: Qreds::Config[:sort],
         context: {}
       ).and_return(reducer)
       expect(reducer).to receive(:call).and_return(reduced_query)
@@ -56,7 +56,7 @@ RSpec.describe Qreds::Endpoint do
         params: {
           'equality' => 2
         },
-        config: Qreds::Config.reducers[:filter],
+        config: Qreds::Config[:filter],
         context: {}
       ).and_return(reducer)
 

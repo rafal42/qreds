@@ -1,4 +1,6 @@
 require 'qreds/endpoint'
+require 'qreds/reducers/filter'
+require 'qreds/reducers/sort'
 
 module Qreds
   class Config
@@ -51,43 +53,14 @@ module Qreds
       end
     end
 
-    OPERATOR_MAPPING_COMP_PGSQL = {
-      'lt' => '< ?',
-      'lte' => '<= ?',
-      'eq' => '= ?',
-      'gt' => '> ?',
-      'gte' => '>= ?',
-      'in' => 'IN (?)',
-      'btw' => 'BETWEEN ? AND ?'
-    }
-
-    private_constant :OPERATOR_MAPPING_COMP_PGSQL
-
     define_reducer :sort do |reducer|
-      reducer.default_lambda = ->(query, attr_name, value, _, _) do
-        query.order(attr_name => value)
-      end
+      reducer.default_lambda = Qreds::Reducers::Sort.method(:call)
     end
 
     define_reducer :filter do |reducer|
-      reducer.default_lambda = ->(query, attr_name, value, operator, _) do
-        terms = attr_name.split('.')
-        sendable_attr_name = terms.last(2).join('.')
-
-        q = if operator.count('?') > 1
-          query.where("#{sendable_attr_name} #{operator}", *value)
-        else
-          query.where("#{sendable_attr_name} #{operator}", value)
-        end
-
-        joins_terms = terms[0..-2].reverse.reduce({}) { |hash, term| { term => hash } }
-
-        return q.joins(joins_terms).group(:id) unless terms.size == 1
-        q
-      end
-
-      reducer.operator_mapping = OPERATOR_MAPPING_COMP_PGSQL
-      reducer.functor_group = 'filters'
+      reducer.default_lambda = Qreds::Reducers::Filter.method(:call)
+      reducer.operator_mapping = Qreds::Reducers::Filter.operator_mapping
+      reducer.functor_group = Qreds::Reducers::Filter.functor_group
     end
   end
 end
