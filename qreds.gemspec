@@ -1,3 +1,5 @@
+require './lib/qreds/version'
+
 Gem::Specification.new do |s|
   s.files = Dir['lib/**/*.rb']
   s.test_files = Dir['spec/**/*.rb']
@@ -6,7 +8,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec'
 
   s.name        = 'qreds'
-  s.version     = '0.0.1'
+  s.version     = Qreds::VERSION
   s.licenses    = 'MIT'
   s.date        = '2018-07-07'
   s.summary     = 'Query reducers.'

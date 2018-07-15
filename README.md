@@ -45,6 +45,29 @@ This definition would enable you to make requests with the specified params, and
 
 Qreds has built-in support for such filters and sorting for ActiveRecord, but also enables you to write custom AR filters / sorting, and define other reducer types to handle different cases (for example, if you'd want some other behaviour for ElasticSearch based endpoints).
 
+#### Association reducers
+
+What if you just added a new association to `Product`:
+
+```ruby
+class Product
+  has_many :offers
+end
+```
+
+And wanted to filter all products that have offers with `value` less than some particular value?
+No problem, we've got you covered.
+
+```ruby
+params do
+  optional :filters, type: Hash do
+    optional :'offers.value_lt', type: Integer
+  end
+end
+```
+
+Now, when the endpoint receives `{"filters": {"offers.value_lt": 42 } }`, it will return all products that have an offer with value less than 42. Qreds takes care of automatically joining the required tables and applying `group(:id)` to get rid of possible duplicates.
+
 ## Built-in reducers
 
 ### `filter` reducer
