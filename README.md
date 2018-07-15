@@ -68,6 +68,8 @@ end
 
 Now, when the endpoint receives `{"filters": {"offers.value_lt": 42 } }`, it will return all products that have an offer with value less than 42. Qreds takes care of automatically joining the required tables and applying `group(:id)` to get rid of possible duplicates.
 
+*Sorting by association fields is not implemented.*
+
 ## Built-in reducers
 
 ### `filter` reducer

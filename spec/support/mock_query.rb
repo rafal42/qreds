@@ -35,8 +35,8 @@ class MockQuery
     self
   end
 
-  def order(hash)
-    k, v = hash.first
+  def order(arg)
+    k, v = arg.first
     order_values[k] = v
 
     self

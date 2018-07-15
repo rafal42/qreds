@@ -12,19 +12,19 @@ RSpec.describe Qreds::Reducers::Attribute do
     context 'when attr_name has 2 dot-separated terms' do
       let(:attr_name) { 'one.value' }
 
-      it { is_expected.to eq(attr_name) }
+      it { is_expected.to eq('ones.value') }
     end
 
     context 'when attr_name has 3 dot-separated terms' do
       let(:attr_name) { 'one.two.value' }
 
-      it { is_expected.to eq('two.value') }
+      it { is_expected.to eq('twos.value') }
     end
 
     context 'when attr_name has more separated terms' do
       let(:attr_name) { 'one.two.three.four.five.value' }
 
-      it { is_expected.to eq('five.value') }
+      it { is_expected.to eq('fives.value') }
     end
   end
 

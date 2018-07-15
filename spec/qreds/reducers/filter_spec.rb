@@ -43,7 +43,7 @@ RSpec.describe Qreds::Reducers::Filter do
       it 'calls where with the nested association, joins and groups properly' do
         is_expected.to eq(
           where: {
-            'another_association.some_field > ?' => [value]
+            'another_associations.some_field > ?' => [value]
           },
           order: {},
           joins: [{

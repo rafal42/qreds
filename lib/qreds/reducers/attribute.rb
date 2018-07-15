@@ -13,7 +13,10 @@ module Qreds
       # If it does not, returns the whole string.
       # @return [String]
       def sendable_name
-        terms.last(2).join('.')
+        return terms.first if terms.size == 1
+
+        table, attr = terms.last(2)
+        [table.pluralize, attr].join('.')
       end
 
       # Applies joins based on the attr_name and group(:id) to the passed query

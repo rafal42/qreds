@@ -18,22 +18,5 @@ RSpec.describe Qreds::Reducers::Sort do
         group: []
       )
     end
-
-    context 'when passing a nested association' do
-      let(:attr_name) { 'an_association.another_association.some_field' }
-
-      it 'calls order with the nested association, joins and groups properly' do
-        is_expected.to eq(
-          where: {},
-          order: {
-            'another_association.some_field' => value
-          },
-          joins: [{
-            'an_association' => { 'another_association' => {} }
-          }],
-          group: %i[id]
-        )
-      end
-    end
   end
 end
