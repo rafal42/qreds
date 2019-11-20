@@ -1,3 +1,8 @@
+# Warning - Unmaintained
+
+I don't have time to maintain this experimental gem.
+Because of it, I'd discourage usage outside of pet projects where you'd like to test the solution.
+
 # Introduction
 
 Qreds is an architectural boilerplate for implementing query reducers,
@@ -6,13 +11,6 @@ and a set of built-in query reducers for ActiveRecord Relations.
 Qreds is a ready-to-go solution for Grape.
 
 ## Quickstart
-
-### Installation
-
-Add the gem to your `Gemfile`:
-`gem qreds`
-
-and run `bundle install`.
 
 ### Example usage (ActiveRecord)
 
